@@ -145,9 +145,13 @@ export default function Home() {
         console.error('Error adding contact:', error);
       } else {
         // Type assertion to ensure data is an array of Contact objects
-        setContacts([...contacts, data[0] as Contact]);
-        setName('');
-        setPhone('');
+        if (data){
+          setContacts([...contacts, data[0] as Contact]);
+          setName('');
+          setPhone('');
+        }else {
+          console.error('No data returned from supabase');
+        }
       }
     } catch (error) {
       console.error('Unexpected error adding contact:', error);

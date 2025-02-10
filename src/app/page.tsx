@@ -1,5 +1,4 @@
-'use client';
-import Image from "next/image";
+// import Image from "next/image";
 
 // export default function Home() {
 //   return (
@@ -102,39 +101,59 @@ import Image from "next/image";
 // }
 
 
+'use client';
+
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
+// Define the structure of your contact data
+interface Contact {
+  id: number; // Or string, depending on your database schema
+  name: string;
+  phone: string;
+}
+
 export default function Home() {
-  const [contacts, setContacts] = useState([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
 
-  // Fetch contacts from Supabase
   useEffect(() => {
     fetchContacts();
   }, []);
 
   const fetchContacts = async () => {
-    const { data, error } = await supabase.from('contacts').select('*');
-    if (error) console.error(error);
-    else setContacts(data);
-  };
-
-
-  const addContact = async () => {
-    const { data, error } = await supabase
-      .from('contacts')
-      .insert([{ name, phone }]);
-    if (error) console.error(error);
-    else {
-      setContacts([...contacts, data[0]]);
-      setName('');
-      setPhone('');
+    try {
+      const { data, error } = await supabase.from('contacts').select('*');
+      if (error) {
+        console.error('Error fetching contacts:', error);
+      } else {
+        // Type assertion to ensure data is an array of Contact objects
+        setContacts(data as Contact[]); 
+      }
+    } catch (error) {
+      console.error('Unexpected error fetching contacts:', error);
     }
   };
 
-  
+  const addContact = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('contacts')
+        .insert([{ name, phone }]);
+      if (error) {
+        console.error('Error adding contact:', error);
+      } else {
+        // Type assertion to ensure data is an array of Contact objects
+        setContacts([...contacts, data[0] as Contact]);
+        setName('');
+        setPhone('');
+      }
+    } catch (error) {
+      console.error('Unexpected error adding contact:', error);
+    }
+  };
+
   return (
     <div style={{ margin: '2rem' }}>
       <h1>CRM Dashboard</h1>
@@ -143,13 +162,13 @@ export default function Home() {
           type="text"
           placeholder="Name"
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
         />
         <input
           type="text"
           placeholder="Phone"
           value={phone}
-          onChange={e => setPhone(e.target.value)}
+          onChange={(e) => setPhone(e.target.value)}
         />
         <button onClick={addContact}>Add Contact</button>
       </div>
